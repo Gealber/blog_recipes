@@ -1,0 +1,34 @@
+() handle_borrow(int user) impure {
+    ;; load user if exists
+    load_user(user);
+    ;; make sure the user can borrow more money
+    throw_unless(err::unathorized_user(), ctx_user_exists);
+    throw_unless(err::unathorized_user(), ~ ctx_user_blacklisted);
+
+    ;; check if the user already borrowed
+    ;; users are only allowed to borrow if they haven't ask a loan before
+    ;; or if they already paid all their debt
+    throw_unless(err::not_allowed_borrow(), (ctx_user_borrowed_amount == 0) & (ctx_user_debt == 0));
+    ;; user should have some balance before asking for a loan
+    throw_unless(err::not_allowed_borrow(), ctx_user_balance > 0);
+    
+    ;; discount amount related to debt
+    update_balance_borrow();
+
+    ;; send the amount of TONS
+    var address = serialize_work_addr(user);
+    send_text_message(
+        address,
+        ctx_user_balance + ctx_user_borrowed_amount,
+        send_mode::default(),
+        begin_cell()
+            .store_accepted_loan(ctx_user_borrowed_amount)        
+    );
+
+    ;; we just sent to the user his current balance plus the amount to borrow
+    ctx_user_balance = 0;
+
+    ;; store
+    store_user();    
+    store_base_data();
+}

@@ -1,0 +1,37 @@
+() handle_withdraw(int user, slice in_msg) impure {
+    if (slice_empty?(in_msg)) {
+        throw(err::invalid_payload());
+    }
+
+    int amount = in_msg~load_coins();
+    ;; check if the amount to withdraw is greater than 0
+    throw_unless(err::invalid_withdraw_amount(), amount > 0);
+
+    ;; load user if exists
+    load_user(user);
+    throw_unless(err::unathorized_user(), ctx_user_exists);
+    throw_unless(err::unathorized_user(), ~ ctx_user_blacklisted);
+
+    ;; check if there's enough balance on bank
+    throw_unless(err::insufficient_bank_balance(), ctx_bank_balance >= amount);
+    ;; check if the user has enough balance for the withdraw
+    throw_unless(err::insufficient_user_balance(), ctx_user_balance >= amount);
+
+    ;; we update the user balance
+    ctx_user_balance -=  amount;
+    ctx_bank_balance -=  amount;
+
+    ;; send amount to be withraw
+    ;; with a comment specifying the amount
+    var address = serialize_work_addr(user);
+    send_text_message(
+        address,
+        amount,
+        send_mode::default(),
+        begin_cell()
+            .store_accepted_withdraw()
+    );
+
+    store_user();
+    store_base_data();
+}

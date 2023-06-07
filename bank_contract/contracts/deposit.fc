@@ -1,0 +1,41 @@
+() handle_deposit(int user, int amount) impure {
+    ;; check if amount is greater than minimum deposit
+    throw_unless(err::invalid_deposit_amount(), amount >= min::user_deposit());
+    ;; load user information from users hashmap
+    load_data();
+    load_user(user);    
+    
+    int currentTime = now();
+    if (ctx_user_startloan_at == 0) {
+        ctx_user_startloan_at = currentTime;
+    }
+
+    int timelapsed = currentTime - ctx_user_startloan_at;
+    ;; check if passed more than 30 days since he borrowed money
+    if ((timelapsed > 30 * 24 * 60 * 60) & (ctx_user_debt > 0)) {
+        ctx_user_blacklisted = true;
+        store_user();    
+        store_base_data();
+        throw(err::unathorized_user());
+    }
+
+    ;; update balance of user and bank, as well as their debts
+    int amountAfterFees = update_balance_deposit(timelapsed, amount);
+    
+    ;; check that the balance after this additional ammount
+    ;; doesn't surpass the maximum allowed balance
+    throw_unless(err::max_limit_balance(), max::user_balance() >= ctx_user_balance);
+
+    ;; send transaction receipt that we received the deposit without problem
+    var address = serialize_work_addr(user);
+    send_text_message(
+        address,
+        receipt_price(),
+        send_mode::default(),
+        begin_cell()
+            .store_accepted_deposit(amountAfterFees, ctx_user_balance)        
+    );
+
+    store_user();
+    store_base_data();
+}

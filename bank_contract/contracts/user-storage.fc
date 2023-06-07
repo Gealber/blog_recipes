@@ -1,0 +1,70 @@
+;; The contract will store the following information about an user
+;; balance stored on ctx_user_balance
+;; money borrowed stored on ctx_user_borrowed_amount
+
+global int ctx_user;
+global int ctx_user_balance;
+global int ctx_user_borrowed_amount;
+global int ctx_user_acc_interest;
+global int ctx_user_debt;
+global int ctx_user_exists;
+global int ctx_user_blacklisted;
+global int ctx_user_startloan_at;
+
+
+;; from the slice with the user information
+;; we will place the global variables
+slice load_user_slice(slice cs) impure {       
+    ctx_user_blacklisted = cs~load_int(1);
+    ctx_user_startloan_at = cs~load_uint(32);
+    ctx_user_balance = cs~load_coins();
+    ctx_user_borrowed_amount = cs~load_coins();
+    ctx_user_acc_interest = cs~load_coins(); ;; interest accumulated
+    ctx_user_debt = cs~load_coins(); ;; user debt money borrowed plus accumulated interest
+    ctx_user_exists = true;
+    return cs;
+}
+
+;; our users are stored in a Hashmap
+;; take a look at the official documentation in this link
+;; https://docs.ton.org/develop/data-formats/tl-b-types#hashmap
+;; or in the paper related to the TVM which in my opinion will be easier
+;; link to the paper: https://ton.org/tvm.pdf
+() load_user(int user) impure {
+    ;; fetch user from hashmap containing users information
+    ;; the user hashmap will contain the address of the user as a key    
+    var (cs, found) = ctx_users.udict_get?(256, user);
+    ctx_user = user;
+    ;; check if user actually exists
+    if (found) {
+        cs = load_user_slice(cs);
+        cs.end_parse();
+        ctx_user_exists = true;   
+    } else {
+        ctx_user_balance = 0;
+        ctx_user_borrowed_amount = 0;
+        ctx_user_acc_interest = 0;
+        ctx_user_debt = 0;      
+        ctx_user_exists = false;
+        ctx_user_blacklisted = false;
+        ctx_user_startloan_at = 0;
+    }
+}
+
+() store_user() impure {
+    var shouldExist = (ctx_user_balance > 0) | (ctx_user_borrowed_amount > 0) | (ctx_user_debt > 0);
+    if (shouldExist) {        
+        var data = begin_cell()            
+            .store_int(ctx_user_blacklisted, 1)
+            .store_uint(ctx_user_startloan_at, 32)
+            .store_coins(ctx_user_balance)
+            .store_coins(ctx_user_borrowed_amount)
+            .store_coins(ctx_user_acc_interest)
+            .store_coins(ctx_user_debt);
+        var changed = udict_set_builder(ctx_users, 256, ctx_user, data);
+        ctx_users = changed;
+    } else {
+        var (changed, _) = udict_delete?(ctx_users, 256, ctx_user);
+        ctx_users = changed;
+    }
+}

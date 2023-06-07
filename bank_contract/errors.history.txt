@@ -1,0 +1,30 @@
+[ 4][t 0][2023-06-01 23:21:48.382000][contops.cpp:182]	execute IFREFELSE (2592BDE8A837BC49BA86E04FDCBD3FF83EFC98B253D88880068B01CFA0BB8DD7)
+[ 4][t 0][2023-06-01 23:21:48.382000][tonops.cpp:153]	execute GETGLOB 8
+[ 4][t 0][2023-06-01 23:21:48.382000][arithops.cpp:84]	execute PUSHINT 10000000
+[ 4][t 0][2023-06-01 23:21:48.382000][arithops.cpp:173]	execute SUB
+[ 4][t 0][2023-06-01 23:21:48.382000][arithops.cpp:173]	execute SUB
+[ 4][t 0][2023-06-01 23:21:48.382000][arithops.cpp:34]	execute PUSHINT 0
+[ 4][t 0][2023-06-01 23:21:48.382000][tonops.cpp:183]	execute SETGLOB 8
+[ 4][t 0][2023-06-01 23:21:48.382000][arithops.cpp:34]	execute PUSHINT 0
+[ 4][t 0][2023-06-01 23:21:48.382000][tonops.cpp:183]	execute SETGLOB 6
+[ 4][t 0][2023-06-01 23:21:48.382000][arithops.cpp:34]	execute PUSHINT 0
+[ 4][t 0][2023-06-01 23:21:48.382000][tonops.cpp:183]	execute SETGLOB 7
+[ 4][t 0][2023-06-01 23:21:48.382000][tonops.cpp:153]	execute GETGLOB 5
+[ 4][t 0][2023-06-01 23:21:48.382000][arithops.cpp:84]	execute PUSHINT 10000000
+[ 4][t 0][2023-06-01 23:21:48.383000][stackops.cpp:186]	execute PUXC s2,s-1
+[ 4][t 0][2023-06-01 23:21:48.383000][arithops.cpp:173]	execute SUB
+[ 4][t 0][2023-06-01 23:21:48.383000][arithops.cpp:164]	execute ADD
+[ 4][t 0][2023-06-01 23:21:48.383000][tonops.cpp:183]	execute SETGLOB 5
+[ 4][t 0][2023-06-01 23:21:48.383000][tonops.cpp:153]	execute GETGLOB 1
+[ 4][t 0][2023-06-01 23:21:48.383000][arithops.cpp:84]	execute PUSHINT 10000000
+[ 4][t 0][2023-06-01 23:21:48.383000][stackops.cpp:186]	execute PUXC s2,s-1
+[ 4][t 0][2023-06-01 23:21:48.383000][arithops.cpp:173]	execute SUB
+[ 4][t 0][2023-06-01 23:21:48.383000][arithops.cpp:164]	execute ADD
+[ 4][t 0][2023-06-01 23:21:48.384000][vm.cpp:477]	handling exception code 7: not an integer
+[ 4][t 0][2023-06-01 23:21:48.384000][continuation.cpp:279]	default exception handler, terminating vm with exit code 7
+
+Exit code 7
+
+Terrible error I didn't declare method that modify state as impure
+
+EXIT CODE -14 OUT FOR GAS. Seems to be triggered when I send a transaction with less than 0.1

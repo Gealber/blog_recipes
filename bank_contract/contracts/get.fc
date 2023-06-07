@@ -1,0 +1,38 @@
+_ get_user_balance(slice address) method_id {
+    load_data();
+    load_user(parse_work_addr(address));
+        
+    return (ctx_user_balance, ctx_user_borrowed_amount, ctx_user_acc_interest, ctx_user_debt);
+}
+
+_ get_users() method_id {
+    load_data();
+
+    var list = nil;
+    list = cons([ctx_user_balance, ctx_user_borrowed_amount, ctx_user_acc_interest, ctx_user_debt], list);
+
+    ;; Iterate all users
+    var id = -1;
+    do {
+        (id, var cs, var f) = ctx_users.udict_get_next?(256, id);
+        
+        if (f) {                          
+            load_user(id);            
+            list = cons([serialize_work_addr(id), ctx_user_balance, ctx_user_borrowed_amount, ctx_user_acc_interest, ctx_user_debt], list);            
+        }
+    } until (~ f);
+
+    return list;
+}
+
+_ get_user(slice address) method_id {
+    load_data();
+    load_user(parse_work_addr(address));    
+    return (ctx_user_balance, ctx_user_borrowed_amount, ctx_user_acc_interest, ctx_user_debt);
+}
+
+_ get_bank_balance() method_id {
+    load_data();
+
+    return (ctx_bank_balance, ctx_bank_borrowed);
+}

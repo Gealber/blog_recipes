@@ -1,0 +1,32 @@
+;; process_client_request as the name states will handle the incomming
+;; messages from the clients of the bank
+;; this method has to be impure, check out more about impure identifier in the next link
+;; https://docs.ton.org/develop/func/functions#impure-specifier
+
+() process_client_request(int address, int flags, int msg_value, slice in_msg) impure {
+    ;; we don't want to process bounced messages
+    if (flags & 1) {        
+        return ();
+    }
+
+    ;; in order to look up if a given user has an account in the bank
+    ;; we will need to load data from smart contract storage
+    load_data(); 
+
+    int op = in_msg~load_uint(32);
+    if (op == op::deposit()) {
+        ;; handle deposit of funds by the user        
+        handle_deposit(address, msg_value);
+    }
+
+    if (op == op::borrow()) {
+        ;; handle borrow of money by the user
+        ;; fixed amount to borrow, 1% of the current balance
+        handle_borrow(address);        
+    }
+
+    if (op == op::withdraw()) {
+        ;; handle withdraw of user funds
+        handle_withdraw(address, in_msg);
+    }
+}

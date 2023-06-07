@@ -1,0 +1,45 @@
+int compute_acc_interest(int timelapsed, int amount) {
+  int days_lapsed = timelapsed / day_secs();
+  ;; C x 0.1/30 x days
+  return days_lapsed * amount / 300;
+}
+
+;; update the balance and debt of an user
+;; as well as the global balance of the bank
+;; we will return the final amount added into the balance
+;; this update is related to the deposit operation
+int update_balance_deposit(int timelapsed, int amount) impure {
+    ;; computing user debt to check what amount
+    ;; of the deposit covers the debt
+    ctx_user_acc_interest = compute_acc_interest(timelapsed, ctx_user_borrowed_amount);    
+    ctx_user_debt = ctx_user_borrowed_amount + ctx_user_acc_interest;
+    ;; if the user borrowed some money previously
+    ;; count this as a repayment of partial repayment
+    ;; we apply a fee to the deposit made
+    ;; given that we need to send a notification bank
+    ;; assuring the client his money was received
+    int amountAfterFees = amount - receipt_price();
+    if (ctx_user_debt >= amountAfterFees) {
+        ctx_user_debt -= amountAfterFees;
+        amountAfterFees = 0;
+    } else {
+        ;; the debt is payable
+        amountAfterFees -= ctx_user_debt;
+        ctx_user_debt = 0;
+        ctx_user_borrowed_amount = 0;
+        ctx_user_acc_interest = 0;
+        ;; add the rest to the balance
+        ctx_user_balance += amountAfterFees;
+        ctx_bank_balance += amountAfterFees;
+    }
+
+    return amountAfterFees;
+}
+
+;; update the debt balance of the user as well as the bank
+() update_balance_borrow() impure {
+    ;; users are allowed to borrow only the 10% of its balance
+    ctx_user_borrowed_amount = ctx_user_balance / 10;
+    ctx_bank_borrowed += ctx_user_borrowed_amount;
+    ctx_user_startloan_at = now();
+}

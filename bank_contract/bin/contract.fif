@@ -1,0 +1,674 @@
+"Asm.fif" include
+// automatically generated from `stdlib.fc` `consts.fc` `utils.fc` `storage.fc` `user-storage.fc` `model.fc` `deposit.fc` `withdraw.fc` `borrow.fc` `requests.fc` `bank.fc` `get.fc` 
+PROGRAM{
+  DECLPROC encode_number_to_text
+  DECLPROC parse_work_addr
+  DECLPROC serialize_work_addr
+  DECLPROC send_text_message
+  DECLPROC store_coins_string
+  DECLPROC store_text_withdraw
+  DECLPROC store_text_deposit
+  DECLPROC store_text_loan
+  DECLPROC store_text_space
+  DECLPROC store_text_point
+  DECLPROC store_text_new
+  DECLPROC store_text_balance
+  DECLPROC store_text_accepted
+  DECLPROC store_text_completed
+  DECLPROC store_accepted_deposit
+  DECLPROC store_accepted_withdraw
+  DECLPROC store_accepted_loan
+  DECLPROC load_data
+  DECLPROC store_base_data
+  DECLPROC load_user_slice
+  DECLPROC load_user
+  DECLPROC store_user
+  DECLPROC compute_acc_interest
+  DECLPROC update_balance_deposit
+  DECLPROC update_balance_borrow
+  DECLPROC handle_deposit
+  DECLPROC handle_withdraw
+  DECLPROC handle_borrow
+  DECLPROC process_client_request
+  DECLPROC recv_internal
+  DECLPROC recv_external
+  67872 DECLMETHOD get_user_balance
+  117652 DECLMETHOD get_users
+  91785 DECLMETHOD get_user
+  108819 DECLMETHOD get_bank_balance
+  DECLGLOBVAR ctx_bank_balance
+  DECLGLOBVAR ctx_bank_borrowed
+  DECLGLOBVAR ctx_users
+  DECLGLOBVAR ctx_user
+  DECLGLOBVAR ctx_user_balance
+  DECLGLOBVAR ctx_user_borrowed_amount
+  DECLGLOBVAR ctx_user_acc_interest
+  DECLGLOBVAR ctx_user_debt
+  DECLGLOBVAR ctx_user_exists
+  DECLGLOBVAR ctx_user_blacklisted
+  DECLGLOBVAR ctx_user_startloan_at
+  encode_number_to_text PROC:<{
+    //  number
+    0 PUSHINT	//  number len=0
+    DUP	//  number len=0 value=0
+    1 PUSHINT	//  number len=0 value=0 mult=1
+    UNTIL:<{
+      s0 s3 XCHG
+      10 PUSHINT	//  mult len value number _8=10
+      DIVMOD	//  mult len value number res
+      48 ADDCONST	//  mult len value number _11
+      s4 PUSH	//  mult len value number _11 mult
+      MUL	//  mult len value number _12
+      s1 s2 XCHG	//  mult len number value _12
+      ADD	//  mult len number value
+      s0 s3 XCHG	//  value len number mult
+      8 LSHIFT#	//  value len number mult
+      s0 s2 XCHG	//  value mult number len
+      INC	//  value mult number len
+      OVER	//  value mult number len number
+      0 EQINT	//  value mult number len _19
+      s4 s3 s0 XCHG3	//  number len value mult _19
+    }>	//  number len value mult
+    DROP
+    1 2 BLKDROP2	//  len value
+  }>
+  parse_work_addr PROC:<{
+    //  cs
+    REWRITEVARADDR	//  sender_wc sender_addr
+    72 PUSHINT	//  sender_wc sender_addr _4
+    s0 s2 XCHG	//  _4 sender_addr sender_wc
+    0 EQINT	//  _4 sender_addr _6
+    s1 s2 XCHG	//  sender_addr _4 _6
+    THROWANYIFNOT
+    256 LDU	//  _14 _13
+    DROP	//  _8
+  }>
+  serialize_work_addr PROC:<{
+    //  addr
+    0 PUSHINT	//  addr _1=0
+    DUP	//  addr _1=0 _2=0
+    2 PUSHINT	//  addr _1=0 _2=0 _3=2
+    NEWC	//  addr _1=0 _2=0 _3=2 _4
+    2 STU	//  addr _1=0 _2=0 _6
+    1 STU	//  addr _1=0 _8
+    8 STU	//  addr _10
+    256 STU	//  _12
+    ENDC	//  _13
+    CTOS	//  _14
+  }>
+  send_text_message PROC:<{
+    //  to_addr value mode content
+    0 PUSHINT	//  to_addr value mode content _5=0
+    NEWC	//  to_addr value mode content _5=0 _6
+    32 STU	//  to_addr value mode content _8
+    SWAP	//  to_addr value mode _8 content
+    STBR	//  to_addr value mode _9
+    ENDC	//  to_addr value mode body
+    1 PUSHINT	//  to_addr value mode body _12=1
+    16 PUSHINT	//  to_addr value mode body _12=1 _13=16
+    NEWC	//  to_addr value mode body _12=1 _13=16 _14
+    6 STU	//  to_addr value mode body _12=1 _16
+    s0 s5 XCHG2	//  _12=1 value mode body _16 to_addr
+    STSLICER	//  _12=1 value mode body _17
+    s0 s3 XCHG2	//  _12=1 body mode _17 value
+    STGRAMS	//  _12=1 body mode _18
+    s1 s3 XCHG	//  mode body _12=1 _18
+    107 STU	//  mode body _32
+    STREF	//  mode _33
+    ENDC	//  mode msg
+    SWAP	//  msg mode
+    SENDRAWMSG
+  }>
+  store_coins_string PROC:<{
+    //  msg amount
+    1000000000 PUSHINT	//  msg amount _4=1000000000
+    DIVMOD	//  msg ceil res
+    SWAP	//  msg res ceil
+    encode_number_to_text CALLDICT	//  msg res cl cv
+    SWAP	//  msg res cv cl
+    3 LSHIFT#	//  msg res cv _10
+    s1 s3 s0 XCHG3	//  res cv msg _10
+    STUX	//  res msg
+    46 PUSHINT	//  res msg _12=46
+    SWAP	//  res _12=46 msg
+    8 STU	//  res msg
+    SWAP	//  msg res
+    encode_number_to_text CALLDICT	//  msg rl rv
+    SWAP	//  msg rv rl
+    3 LSHIFT#	//  msg rv _19
+    s1 s2 XCHG	//  rv msg _19
+    STUX	//  _20
+  }>
+  store_text_withdraw PROCINLINE:<{
+    //  b
+    6298693545564987767 PUSHINT	//  b _1=6298693545564987767
+    SWAP	//  _1=6298693545564987767 b
+    64 STU	//  _3
+  }>
+  store_text_deposit PROCINLINE:<{
+    //  b
+    19251831996901748 PUSHINT	//  b _1=19251831996901748
+    SWAP	//  _1=19251831996901748 b
+    56 STU	//  _3
+  }>
+  store_text_loan PROCINLINE:<{
+    //  b
+    21514562480140134 PUSHINT	//  b _1=21514562480140134
+    SWAP	//  _1=21514562480140134 b
+    56 STU	//  _3
+  }>
+  store_text_space PROCINLINE:<{
+    //  b
+    32 PUSHINT	//  b _1=32
+    SWAP	//  _1=32 b
+    8 STU	//  _3
+  }>
+  store_text_point PROCINLINE:<{
+    //  b
+    46 PUSHINT	//  b _1=46
+    SWAP	//  _1=46 b
+    8 STU	//  _3
+  }>
+  store_text_new PROCINLINE:<{
+    //  b
+    5137783 PUSHINT	//  b _1=5137783
+    SWAP	//  _1=5137783 b
+    24 STU	//  _3
+  }>
+  store_text_balance PROCINLINE:<{
+    //  b
+    27691665836630885 PUSHINT	//  b _1=27691665836630885
+    SWAP	//  _1=27691665836630885 b
+    56 STU	//  _3
+  }>
+  store_text_accepted PROCINLINE:<{
+    //  b
+    7017561931702887780 PUSHINT	//  b _1=7017561931702887780
+    SWAP	//  _1=7017561931702887780 b
+    64 STU	//  _3
+  }>
+  store_text_completed PROCINLINE:<{
+    //  b
+    1834256860618777978212 PUSHINT	//  b _1=1834256860618777978212
+    SWAP	//  _1=1834256860618777978212 b
+    72 STU	//  _3
+  }>
+  store_accepted_deposit PROCINLINE:<{
+    //  b amount balance
+    NIP	//  b balance
+    SWAP	//  balance b
+    store_text_deposit INLINECALLDICT	//  balance _3
+    store_text_space INLINECALLDICT	//  balance _4
+    store_text_accepted INLINECALLDICT	//  balance _5
+    store_text_point INLINECALLDICT	//  balance _6
+    store_text_space INLINECALLDICT	//  balance _7
+    store_text_new INLINECALLDICT	//  balance _8
+    store_text_space INLINECALLDICT	//  balance _9
+    store_text_balance INLINECALLDICT	//  balance _10
+    store_text_space INLINECALLDICT	//  balance _11
+    SWAP	//  _11 balance
+    store_coins_string CALLDICT	//  _12
+  }>
+  store_accepted_withdraw PROCINLINE:<{
+    //  b
+    store_text_withdraw INLINECALLDICT	//  _1
+    store_text_space INLINECALLDICT	//  _2
+    store_text_completed INLINECALLDICT	//  _3
+  }>
+  store_accepted_loan PROCINLINE:<{
+    //  b amount
+    SWAP	//  amount b
+    store_text_loan INLINECALLDICT	//  amount _2
+    store_text_space INLINECALLDICT	//  amount _3
+    SWAP	//  _3 amount
+    store_coins_string CALLDICT	//  _4
+    store_text_space INLINECALLDICT	//  _5
+    store_text_completed INLINECALLDICT	//  _6
+  }>
+  load_data PROC:<{
+    // 
+    c4 PUSH	//  _1
+    CTOS	//  ds
+    LDGRAMS	//  _5 ds
+    SWAP	//  ds _5
+    ctx_bank_balance SETGLOB
+    LDGRAMS	//  _8 ds
+    SWAP	//  ds _8
+    ctx_bank_borrowed SETGLOB
+    LDDICT	//  _11 ds
+    SWAP	//  ds _11
+    ctx_users SETGLOB
+    ENDS
+  }>
+  store_base_data PROC:<{
+    // 
+    ctx_users GETGLOB	//  _0
+    NEWC	//  _0 _1
+    ctx_bank_balance GETGLOB	//  _0 _1 _2
+    STGRAMS	//  _0 _3
+    ctx_bank_borrowed GETGLOB	//  _0 _3 _4
+    STGRAMS	//  _0 _5
+    STDICT	//  _6
+    ENDC	//  _7
+    c4 POP
+    COMMIT
+  }>
+  load_user_slice PROC:<{
+    //  cs
+    1 LDI	//  _4 cs
+    SWAP	//  cs _4
+    ctx_user_blacklisted SETGLOB
+    32 LDU	//  _8 cs
+    SWAP	//  cs _8
+    ctx_user_startloan_at SETGLOB
+    LDGRAMS	//  _11 cs
+    SWAP	//  cs _11
+    ctx_user_balance SETGLOB
+    LDGRAMS	//  _14 cs
+    SWAP	//  cs _14
+    ctx_user_borrowed_amount SETGLOB
+    LDGRAMS	//  _17 cs
+    SWAP	//  cs _17
+    ctx_user_acc_interest SETGLOB
+    LDGRAMS	//  _20 cs
+    SWAP	//  cs _20
+    ctx_user_debt SETGLOB
+    TRUE	//  cs _22
+    ctx_user_exists SETGLOB
+  }>
+  load_user PROC:<{
+    //  user
+    ctx_users GETGLOB	//  user _3
+    s1 s(-1) PUXC
+    8 PUSHPOW2	//  user user _3 _4=256
+    DICTUGET
+    NULLSWAPIFNOT	//  _6 cs found
+    s0 s2 XCHG	//  found cs _6
+    ctx_user SETGLOB
+    SWAP	//  cs found
+    IF:<{	//  cs
+      load_user_slice CALLDICT	//  cs
+      ENDS
+      TRUE	//  _10
+      ctx_user_exists SETGLOB
+    }>ELSE<{	//  cs
+      DROP	// 
+      0 PUSHINT	//  _12=0
+      ctx_user_balance SETGLOB
+      0 PUSHINT	//  _14=0
+      ctx_user_borrowed_amount SETGLOB
+      0 PUSHINT	//  _16=0
+      ctx_user_acc_interest SETGLOB
+      0 PUSHINT	//  _18=0
+      ctx_user_debt SETGLOB
+      FALSE	//  _20
+      ctx_user_exists SETGLOB
+      FALSE	//  _22
+      ctx_user_blacklisted SETGLOB
+      0 PUSHINT	//  _24=0
+      ctx_user_startloan_at SETGLOB
+    }>
+  }>
+  store_user PROC:<{
+    // 
+    ctx_user_balance GETGLOB	//  _1
+    0 GTINT	//  _3
+    ctx_user_borrowed_amount GETGLOB	//  _3 _4
+    0 GTINT	//  _3 _6
+    OR	//  _7
+    ctx_user_debt GETGLOB	//  _7 _8
+    0 GTINT	//  _7 _10
+    OR	//  shouldExist
+    IF:<{	// 
+      ctx_user_startloan_at GETGLOB	//  _13
+      ctx_user_blacklisted GETGLOB	//  _13 _14
+      NEWC	//  _13 _14 _15
+      1 STI	//  _13 _17
+      32 STU	//  _19
+      ctx_user_balance GETGLOB	//  _19 _20
+      STGRAMS	//  _21
+      ctx_user_borrowed_amount GETGLOB	//  _21 _22
+      STGRAMS	//  _23
+      ctx_user_acc_interest GETGLOB	//  _23 _24
+      STGRAMS	//  _25
+      ctx_user_debt GETGLOB	//  _25 _26
+      STGRAMS	//  data
+      ctx_user GETGLOB	//  data _29
+      ctx_users GETGLOB	//  data _29 _30
+      8 PUSHPOW2	//  data _29 _30 _31=256
+      DICTUSETB	//  _33
+      ctx_users SETGLOB
+    }>ELSE<{	// 
+      ctx_user GETGLOB	//  _36
+      ctx_users GETGLOB	//  _36 _37
+      8 PUSHPOW2	//  _36 _37 _38=256
+      DICTUDEL	//  _41 _42
+      DROP	//  _40
+      ctx_users SETGLOB
+    }>
+  }>
+  compute_acc_interest PROC:<{
+    //  timelapsed amount
+    86400 PUSHINT	//  timelapsed amount _3
+    s1 s2 XCHG	//  amount timelapsed _3
+    DIV	//  amount days_lapsed
+    SWAP	//  days_lapsed amount
+    MUL	//  _5
+    300 PUSHINT	//  _5 _6=300
+    DIV	//  _7
+  }>
+  update_balance_deposit PROC:<{
+    //  timelapsed amount
+    ctx_user_borrowed_amount GETGLOB	//  timelapsed amount _2
+    s1 s2 XCHG	//  amount timelapsed _2
+    compute_acc_interest CALLDICT	//  amount _4
+    ctx_user_acc_interest SETGLOB
+    ctx_user_borrowed_amount GETGLOB	//  amount _5
+    ctx_user_acc_interest GETGLOB	//  amount _5 _6
+    ADD	//  amount _8
+    ctx_user_debt SETGLOB
+    10000000 PUSHINT	//  amount _10
+    SUB	//  amountAfterFees
+    ctx_user_debt GETGLOB	//  amountAfterFees _12
+    OVER	//  amountAfterFees _12 amountAfterFees
+    GEQ	//  amountAfterFees _13
+    IF:<{	//  amountAfterFees
+      ctx_user_debt GETGLOB	//  amountAfterFees _14
+      SWAP	//  _14 amountAfterFees
+      SUB	//  _16
+      ctx_user_debt SETGLOB
+      0 PUSHINT	//  amountAfterFees=0
+    }>ELSE<{	//  amountAfterFees
+      ctx_user_debt GETGLOB	//  amountAfterFees _18
+      SUB	//  amountAfterFees
+      0 PUSHINT	//  amountAfterFees _21=0
+      ctx_user_debt SETGLOB
+      0 PUSHINT	//  amountAfterFees _23=0
+      ctx_user_borrowed_amount SETGLOB
+      0 PUSHINT	//  amountAfterFees _25=0
+      ctx_user_acc_interest SETGLOB
+      ctx_user_balance GETGLOB	//  amountAfterFees _26
+      OVER	//  amountAfterFees _26 amountAfterFees
+      ADD	//  amountAfterFees _28
+      ctx_user_balance SETGLOB
+      ctx_bank_balance GETGLOB	//  amountAfterFees _29
+      OVER	//  amountAfterFees _29 amountAfterFees
+      ADD	//  amountAfterFees _31
+      ctx_bank_balance SETGLOB
+    }>
+  }>
+  update_balance_borrow PROC:<{
+    // 
+    ctx_user_balance GETGLOB	//  _0
+    10 PUSHINT	//  _0 _1=10
+    DIV	//  _3
+    ctx_user_borrowed_amount SETGLOB
+    ctx_bank_borrowed GETGLOB	//  _4
+    ctx_user_borrowed_amount GETGLOB	//  _4 _5
+    ADD	//  _7
+    ctx_bank_borrowed SETGLOB
+    NOW	//  _9
+    ctx_user_startloan_at SETGLOB
+  }>
+  handle_deposit PROC:<{
+    //  user amount
+    74 PUSHINT	//  user amount _2
+    1000000000 PUSHINT	//  user amount _2 _3
+    s2 s(-1) PUXC	//  user amount _2 amount _3
+    GEQ	//  user amount _2 _4
+    THROWANYIFNOT
+    load_data CALLDICT
+    OVER	//  user amount user
+    load_user CALLDICT
+    NOW	//  user amount currentTime
+    ctx_user_startloan_at GETGLOB	//  user amount currentTime _10
+    0 EQINT	//  user amount currentTime _12
+    IF:<{	//  user amount currentTime
+      DUP	//  user amount currentTime _13
+      ctx_user_startloan_at SETGLOB
+    }>	//  user amount currentTime
+    ctx_user_startloan_at GETGLOB	//  user amount currentTime _15
+    SUB	//  user amount timelapsed
+    DUP
+    2592000 PUSHINT	//  user amount timelapsed timelapsed _23
+    GREATER	//  user amount timelapsed _24
+    ctx_user_debt GETGLOB	//  user amount timelapsed _24 _25
+    0 GTINT	//  user amount timelapsed _24 _27
+    AND	//  user amount timelapsed _28
+    IF:<{	//  user amount timelapsed
+      TRUE	//  user amount timelapsed _30
+      ctx_user_blacklisted SETGLOB
+      store_user CALLDICT
+      store_base_data CALLDICT
+      77 PUSHINT	//  user amount timelapsed _33
+      THROWANY
+    }>	//  user amount timelapsed
+    SWAP	//  user timelapsed amount
+    update_balance_deposit CALLDICT	//  user amountAfterFees
+    73 PUSHINT	//  user amountAfterFees _37
+    10000000000 PUSHINT	//  user amountAfterFees _37 _38
+    ctx_user_balance GETGLOB	//  user amountAfterFees _37 _38 _39
+    GEQ	//  user amountAfterFees _37 _40
+    THROWANYIFNOT
+    SWAP	//  amountAfterFees user
+    serialize_work_addr CALLDICT	//  amountAfterFees address
+    10000000 PUSHINT	//  amountAfterFees address _44
+    0 PUSHINT	//  amountAfterFees address _44 _45
+    NEWC	//  amountAfterFees address _44 _45 _46
+    ctx_user_balance GETGLOB	//  amountAfterFees address _44 _45 _46 _47
+    s1 s5 s0 XCHG3	//  _45 address _44 _46 amountAfterFees _47
+    store_accepted_deposit INLINECALLDICT	//  _45 address _44 _48
+    s1 s3 s0 XCHG3	//  address _44 _45 _48
+    send_text_message CALLDICT
+    store_user CALLDICT
+    store_base_data CALLDICT
+  }>
+  handle_withdraw PROC:<{
+    //  user in_msg
+    DUP	//  user in_msg in_msg
+    SEMPTY	//  user in_msg _2
+    IF:<{	//  user in_msg
+      83 PUSHINT	//  user in_msg _3
+      THROWANY
+    }>	//  user in_msg
+    LDGRAMS	//  user _43 _42
+    DROP	//  user amount
+    76 PUSHINT	//  user amount _8
+    OVER	//  user amount _8 amount
+    0 GTINT	//  user amount _8 _10
+    THROWANYIFNOT
+    OVER	//  user amount user
+    load_user CALLDICT
+    77 PUSHINT	//  user amount _13
+    ctx_user_exists GETGLOB	//  user amount _13 _14
+    THROWANYIFNOT
+    77 PUSHINT	//  user amount _16
+    ctx_user_blacklisted GETGLOB	//  user amount _16 _17
+    NOT	//  user amount _16 _18
+    THROWANYIFNOT
+    81 PUSHINT	//  user amount _20
+    ctx_bank_balance GETGLOB	//  user amount _20 _21
+    s2 PUSH	//  user amount _20 _21 amount
+    GEQ	//  user amount _20 _22
+    THROWANYIFNOT
+    78 PUSHINT	//  user amount _24
+    ctx_user_balance GETGLOB	//  user amount _24 _25
+    s2 PUSH	//  user amount _24 _25 amount
+    GEQ	//  user amount _24 _26
+    THROWANYIFNOT
+    ctx_user_balance GETGLOB	//  user amount _28
+    OVER	//  user amount _28 amount
+    SUB	//  user amount _30
+    ctx_user_balance SETGLOB
+    ctx_bank_balance GETGLOB	//  user amount _31
+    OVER	//  user amount _31 amount
+    SUB	//  user amount _33
+    ctx_bank_balance SETGLOB
+    SWAP	//  amount user
+    serialize_work_addr CALLDICT	//  amount address
+    0 PUSHINT	//  amount address _36
+    NEWC	//  amount address _36 _37
+    store_accepted_withdraw INLINECALLDICT	//  amount address _36 _38
+    s2 s3 XCHG	//  address amount _36 _38
+    send_text_message CALLDICT
+    store_user CALLDICT
+    store_base_data CALLDICT
+  }>
+  handle_borrow PROC:<{
+    //  user
+    DUP	//  user user
+    load_user CALLDICT
+    77 PUSHINT	//  user _2
+    ctx_user_exists GETGLOB	//  user _2 _3
+    THROWANYIFNOT
+    77 PUSHINT	//  user _5
+    ctx_user_blacklisted GETGLOB	//  user _5 _6
+    NOT	//  user _5 _7
+    THROWANYIFNOT
+    80 PUSHINT	//  user _9
+    ctx_user_borrowed_amount GETGLOB	//  user _9 _10
+    0 EQINT	//  user _9 _12
+    ctx_user_debt GETGLOB	//  user _9 _12 _13
+    0 EQINT	//  user _9 _12 _15
+    AND	//  user _9 _16
+    THROWANYIFNOT
+    80 PUSHINT	//  user _18
+    ctx_user_balance GETGLOB	//  user _18 _19
+    0 GTINT	//  user _18 _21
+    THROWANYIFNOT
+    update_balance_borrow CALLDICT
+    serialize_work_addr CALLDICT	//  address
+    ctx_user_balance GETGLOB	//  address _26
+    ctx_user_borrowed_amount GETGLOB	//  address _26 _27
+    ADD	//  address _28
+    0 PUSHINT	//  address _28 _29
+    NEWC	//  address _28 _29 _30
+    ctx_user_borrowed_amount GETGLOB	//  address _28 _29 _30 _31
+    store_accepted_loan INLINECALLDICT	//  address _28 _29 _32
+    send_text_message CALLDICT
+    0 PUSHINT	//  _35=0
+    ctx_user_balance SETGLOB
+    store_user CALLDICT
+    store_base_data CALLDICT
+  }>
+  process_client_request PROC:<{
+    //  address flags msg_value in_msg
+    s0 s2 XCHG
+    1 PUSHINT	//  address in_msg msg_value flags _4=1
+    AND	//  address in_msg msg_value _5
+    IFJMP:<{	//  address in_msg msg_value
+      3 BLKDROP	// 
+    }>	//  address in_msg msg_value
+    load_data CALLDICT
+    SWAP	//  address msg_value in_msg
+    32 LDU	//  address msg_value op in_msg
+    100 PUSHINT	//  address msg_value op in_msg _11
+    s2 s(-1) PUXC	//  address msg_value op in_msg op _11
+    EQUAL	//  address msg_value op in_msg _12
+    IF:<{	//  address msg_value op in_msg
+      s3 s2 PUXC	//  address in_msg op address msg_value
+      handle_deposit CALLDICT
+    }>ELSE<{
+      s2 POP	//  address in_msg op
+    }>
+    98 PUSHINT	//  address in_msg op _14
+    s1 s(-1) PUXC	//  address in_msg op op _14
+    EQUAL	//  address in_msg op _15
+    IF:<{	//  address in_msg op
+      s2 PUSH	//  address in_msg op address
+      handle_borrow CALLDICT
+    }>	//  address in_msg op
+    119 PUSHINT	//  address in_msg op _17
+    EQUAL	//  address in_msg _18
+    IF:<{	//  address in_msg
+      handle_withdraw CALLDICT
+    }>ELSE<{
+      2DROP	// 
+    }>
+  }>
+  recv_internal PROC:<{
+    //  msg_value in_msg_cell in_msg
+    SWAP	//  msg_value in_msg in_msg_cell
+    CTOS	//  msg_value in_msg cs
+    4 LDU	//  msg_value in_msg flags cs
+    LDMSGADDR	//  msg_value in_msg flags _19 _18
+    DROP	//  msg_value in_msg flags s_addr
+    s2 PUSH	//  msg_value in_msg flags s_addr in_msg
+    SEMPTY	//  msg_value in_msg flags s_addr _12
+    IFJMP:<{	//  msg_value in_msg flags s_addr
+      4 BLKDROP	// 
+    }>	//  msg_value in_msg flags s_addr
+    parse_work_addr CALLDICT	//  msg_value in_msg flags address
+    s1 s3 s3 XCHG3	//  address flags msg_value in_msg
+    process_client_request CALLDICT
+  }>
+  recv_external PROC:<{
+    // 
+    70 PUSHINT	//  _0
+    THROWANY
+  }>
+  get_user_balance PROC:<{
+    //  address
+    load_data CALLDICT
+    parse_work_addr CALLDICT	//  _2
+    load_user CALLDICT
+    ctx_user_balance GETGLOB	//  _4
+    ctx_user_borrowed_amount GETGLOB	//  _4 _5
+    ctx_user_acc_interest GETGLOB	//  _4 _5 _6
+    ctx_user_debt GETGLOB	//  _4 _5 _6 _7
+  }>
+  get_users PROC:<{
+    // 
+    load_data CALLDICT
+    PUSHNULL	//  list
+    ctx_user_balance GETGLOB	//  list _4
+    ctx_user_borrowed_amount GETGLOB	//  list _4 _5
+    ctx_user_acc_interest GETGLOB	//  list _4 _5 _6
+    ctx_user_debt GETGLOB	//  list _4 _5 _6 _7
+    4 TUPLE	//  list _3
+    SWAP	//  _3 list
+    CONS	//  list
+    -1 PUSHINT	//  list id=-1
+    UNTIL:<{
+      ctx_users GETGLOB	//  list id _13
+      8 PUSHPOW2	//  list id _13 _14=256
+      DICTUGETNEXT
+      NULLSWAPIFNOT2	//  list _26 _25 _27
+      s2 POP	//  list f id
+      OVER	//  list f id f
+      IF:<{	//  list f id
+        DUP	//  list f id id
+        load_user CALLDICT
+        DUP	//  list f id id
+        serialize_work_addr CALLDICT	//  list f id _18
+        ctx_user_balance GETGLOB	//  list f id _18 _19
+        ctx_user_borrowed_amount GETGLOB	//  list f id _18 _19 _20
+        ctx_user_acc_interest GETGLOB	//  list f id _18 _19 _20 _21
+        ctx_user_debt GETGLOB	//  list f id _18 _19 _20 _21 _22
+        5 TUPLE	//  list f id _17
+        s0 s3 XCHG2	//  id f _17 list
+        CONS	//  id f list
+        s0 s2 XCHG	//  list f id
+      }>	//  list f id
+      SWAP	//  list id f
+      NOT	//  list id _24
+    }>	//  list id
+    DROP	//  list
+  }>
+  get_user PROC:<{
+    //  address
+    load_data CALLDICT
+    parse_work_addr CALLDICT	//  _2
+    load_user CALLDICT
+    ctx_user_balance GETGLOB	//  _4
+    ctx_user_borrowed_amount GETGLOB	//  _4 _5
+    ctx_user_acc_interest GETGLOB	//  _4 _5 _6
+    ctx_user_debt GETGLOB	//  _4 _5 _6 _7
+  }>
+  get_bank_balance PROC:<{
+    // 
+    load_data CALLDICT
+    ctx_bank_balance GETGLOB	//  _1
+    ctx_bank_borrowed GETGLOB	//  _1 _2
+  }>
+}END>c

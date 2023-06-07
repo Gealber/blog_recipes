@@ -1,0 +1,33 @@
+;; total balance of the bank, basically cash
+global int ctx_bank_balance;
+;; amount of money borrowed by users
+global int ctx_bank_borrowed;
+;; cell containing users of the bank
+;; checkout user-storage.fc to see what information
+;; is stored about the user
+global cell ctx_users;
+
+;; loads data from contract storage
+;; users data is stored on this storage
+() load_data() impure {
+    ;; reading data in smart contract storage
+    var ds = get_data().begin_parse();    
+    ;; loading bank balance information   
+    ctx_bank_balance = ds~load_coins();
+    ;; loading money borrowed by users information
+    ctx_bank_borrowed = ds~load_coins();    
+    ;; loading hashmap that contains users information
+    ctx_users = ds~load_dict();
+    ;; loading cell
+    ds.end_parse();
+}
+
+;; storing data into contract storage
+() store_base_data() impure {
+    set_data(begin_cell()
+        .store_coins(ctx_bank_balance)
+        .store_coins(ctx_bank_borrowed)
+        .store_dict(ctx_users)
+    .end_cell());
+    commit();
+}

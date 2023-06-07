@@ -1,0 +1,21 @@
+() recv_internal(int msg_value, cell in_msg_cell, slice in_msg) impure {
+    ;; start parsing the cell
+    var cs = in_msg_cell.begin_parse();
+    ;; load the following flags: int_msg_info$0 ihr_disabled:Bool bounce:Bool bounced:Bool
+    var flags = cs~load_uint(4);
+    ;; load sender address
+    slice s_addr = cs~load_msg_addr(); 
+
+    if (slice_empty?(in_msg)) {
+        return ();
+    }
+    
+    ;; parsing address and checking its workchain
+    var address = parse_work_addr(s_addr);    
+    process_client_request(address, flags, msg_value, in_msg);
+}
+
+() recv_external() {
+    ;; we are not processing external messages
+    throw(err::invalid_msg());
+}

@@ -1,0 +1,45 @@
+;;
+;; Errors
+;;
+int err::invalid_msg() asm "70 PUSHINT";
+int err::invalid_operation() asm "71 PUSHINT";
+int err::invalid_address() asm "72 PUSHINT";
+int err::max_limit_balance() asm "73 PUSHINT";
+int err::invalid_deposit_amount() asm "74 PUSHINT";
+int err::invalid_withdraw_amount() asm "76 PUSHINT";
+int err::unathorized_user() asm "77 PUSHINT";
+int err::insufficient_user_balance() asm "78 PUSHINT";
+int err::invalid_borrow_amount() asm "79 PUSHINT";
+int err::not_allowed_borrow() asm "80 PUSHINT";
+int err::insufficient_bank_balance() asm "81 PUSHINT";
+int err::null_in_msg() asm "82 PUSHINT";
+int err::invalid_payload() asm "83 PUSHINT";
+
+;;
+;; Operations
+;;
+;; 100 because is the value for 'd'
+int op::deposit() asm "100 PUSHINT";
+;; 98 because is the value for 'b'
+int op::borrow() asm "98 PUSHINT";
+;; 119 because is the value for 'w'
+int op::withdraw() asm "119 PUSHINT";
+
+;;
+;; Limits
+;;
+;; maximum balance for a user
+int max::user_balance() asm "10000000000 PUSHINT"; ;; 10 TON
+;; min deposit for a user
+int min::user_deposit() asm "1000000000 PUSHINT"; ;; 1 TON
+
+;;
+;; Send modes
+;;
+int send_mode::default() asm "0 PUSHINT";
+
+;;
+;; Other
+;;
+int receipt_price() asm "10000000 PUSHINT"; ;; 0.01
+int day_secs() asm "86400 PUSHINT"; ;; 86400 = 24 * 60 * 60 seconds in a day

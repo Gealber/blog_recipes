@@ -1,0 +1,5 @@
+1. Implement Reserver Ratio of 10%
+2. Implement bank rupcy mechanism
+3. Add a ctx_owner
+4. [DONE] Implement get methods
+5. [DONE] Fix math in deposit and withdraw. We are lossing money.

@@ -1,0 +1,148 @@
+;; Code shamelessly taken from tonwhales nominators
+;; can be found in this link
+;; https://github.com/tonwhales/ton-nominators/blob/main/sources/modules/utils.fc
+
+(int, int) encode_number_to_text(int number) {
+  int len = 0;
+  int value = 0;
+  int mult = 1;
+  do {
+    (number, int res) = number.divmod(10);
+    value = value + (res + 48) * mult;
+    mult = mult * 256;
+    len = len + 1;
+  } until (number == 0);
+  return (len, value);
+}
+
+;;
+;; Basic workchain addresses
+;;
+
+int parse_work_addr(slice cs) {
+  (int sender_wc, slice sender_addr) = parse_var_addr(cs);
+  ;; checking if is an address from the Basechain only
+  ;; to learn more about this check out the official doc here
+  ;; https://docs.ton.org/learn/overviews/ton-blockchain
+  throw_unless(err::invalid_address(), 0 == sender_wc);
+  return sender_addr~load_uint(256);
+}
+
+(slice) serialize_work_addr(int addr) {
+   return (begin_cell()
+     .store_uint(2, 2)  ;; Is std address
+     .store_uint(0, 1)  ;; Non-unicast
+     .store_uint(0, 8)  ;; Basic workchain
+     .store_uint(addr, 256) ;; Address hash
+   ).end_cell().begin_parse();
+}
+
+() send_text_message(
+  slice to_addr,
+  int value,
+  int mode, 
+  builder content
+) impure {
+
+  var body = begin_cell()
+      .store_uint(0, 32) ;; op = 0 with no query
+      .store_builder(content)
+  .end_cell();
+
+  var msg = begin_cell()
+    .store_uint(0x10, 6)
+    .store_slice(to_addr)
+    .store_coins(value)
+    .store_uint(1, 1 + 4 + 4 + 64 + 32 + 1 + 1)
+    .store_ref(body)
+  .end_cell();
+
+  send_raw_message(msg, mode);
+}
+
+builder store_coins_string(builder msg, int amount) {
+  (int ceil, int res) = divmod(amount, 1000000000);
+  (int cl, int cv) = encode_number_to_text(ceil);
+  msg = msg.store_uint(cv, cl * 8 );
+  msg = msg.store_uint(46, 8); ;; "."
+  (int rl, int rv) = encode_number_to_text(res);
+  ;; repeat( 9 - rl ) {
+  ;;  msg = msg.store_uint(48, 8); ;; " "
+  ;; }
+  return msg.store_uint(rv, rl * 8);
+}
+
+;; 'Withdraw'
+builder store_text_withdraw(builder b) inline {
+    return b.store_uint(6298693545564987767, 64);
+}
+
+;; 'Deposit'
+builder store_text_deposit(builder b) inline {
+    return b.store_uint(19251831996901748, 56);
+}
+
+;; 'Loan of'
+builder store_text_loan(builder b) inline {
+    return b.store_uint(21514562480140134, 56);
+}
+
+;; ' '
+builder store_text_space(builder b) inline {
+    return b.store_uint(32, 8);
+}
+
+;; '.'
+builder store_text_point(builder b) inline {
+    return b.store_uint(46, 8);
+}
+
+;; 'New'
+builder store_text_new(builder b) inline {
+    return b.store_uint(5137783, 24);
+}
+
+;; 'balance'
+builder store_text_balance(builder b) inline {
+    return b.store_uint(27691665836630885, 56);
+}
+
+;; 'accepted'
+builder store_text_accepted(builder b) inline {
+    return b.store_uint(7017561931702887780, 64);
+}
+
+;; 'completed'
+builder store_text_completed(builder b) inline {
+    return b.store_uint(1834256860618777978212, 72);
+}
+
+;; Deposit accepted. New balance 140
+builder store_accepted_deposit(builder b, int amount, int balance) inline {
+    return b.store_text_deposit()            
+            .store_text_space()
+            .store_text_accepted()
+            .store_text_point()
+            .store_text_space()
+            .store_text_new()
+            .store_text_space()
+            .store_text_balance()
+            .store_text_space()
+            .store_coins_string(balance);
+}
+
+;; Withdraw completed
+builder store_accepted_withdraw(builder b) inline {
+    return b.store_text_withdraw()
+            .store_text_space()   
+            .store_text_completed();
+}
+
+;; Loan of 0.01 completed
+builder store_accepted_loan(builder b, int amount) inline {
+    return b.store_text_loan()
+            .store_text_space()
+            .store_coins_string(amount)
+            .store_text_space()
+            .store_text_completed();
+}
