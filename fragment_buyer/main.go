@@ -21,14 +21,6 @@ const (
 )
 
 func main() {
-	// getNumberAddress()
-	// getOnSaleNumbers()
-	// scrapeNumbers()
-	buyNumbers()
-	// auctionNumbers()
-}
-
-func getNumberAddress() {
 	client := liteclient.NewConnectionPool()
 	ctx := client.StickyContext(context.Background())
 	err := client.AddConnectionsFromConfigUrl(ctx, MainnetConfig)
@@ -37,6 +29,14 @@ func getNumberAddress() {
 	}
 
 	api := ton.NewAPIClient(client)
+	// getNumberAddress()
+	// getOnSaleNumbers()
+	// scrapeNumbers()	
+	buyNumbers(ctx, api)
+	// auctionNumbers()
+}
+
+func getNumberAddress(ctx context.Context, api *ton.APIClient) {	
 	tokenName := "88805764931"
 	nftAddr, err := utils.GetAnonymousNumberAddress(ctx, api, tokenName)
 	if err != nil {
@@ -55,16 +55,7 @@ func getOnSaleNumbers() {
 	fmt.Printf("NUMBERS: %+v\n", numbers)
 }
 
-func scrapeNumbers() {
-	client := liteclient.NewConnectionPool()	
-	ctx := context.Background()
-	err := client.AddConnectionsFromConfigUrl(ctx, MainnetConfig)
-	if err != nil {
-		panic(err)
-	}
-
-	api := ton.NewAPIClient(client)
-
+func scrapeNumbers(ctx context.Context, api *ton.APIClient) {
 	numbers, err := utils.ScrapeFragmentMarket()
 	if err != nil {
 		panic(err)
@@ -88,15 +79,7 @@ func scrapeNumbers() {
 	}
 }
 
-func buyNumbers() {
-	client := liteclient.NewConnectionPool()
-	ctx := context.Background()
-	err := client.AddConnectionsFromConfigUrl(ctx, MainnetConfig)
-	if err != nil {
-		panic(err)
-	}
-
-	api := ton.NewAPIClient(client)
+func buyNumbers(ctx context.Context, api *ton.APIClient) {	
 	seed := strings.Split("<SEED>", " ")
 	w, err := wallet.FromSeed(api, seed, WalletVersion)
 	if err != nil {
